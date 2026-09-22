@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#F7F3EE">
+  <meta name="description" content="環島記帳 — 記錄旅途中的每一筆花費，簡約文青風格的旅行記帳工具">
+  <title>環島記帳</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏝️</text></svg>">
+</head>
+<body>
+  <div class="app-container" id="app">
+    <!-- ===== SETUP VIEW ===== -->
+    <div class="view setup-view active" id="view-setup">
+      <div class="setup-logo">🏝️</div>
+      <h1 class="setup-title">環島記帳</h1>
+      <p class="setup-desc">記錄旅途中的每一筆溫度</p>
+      <form class="setup-form" id="setup-form" autocomplete="off">
+        <div class="form-group">
+          <label class="form-label" for="trip-name">旅程名稱</label>
+          <input class="form-input" type="text" id="trip-name" placeholder="例：秋日環島之旅" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="trip-days">旅程天數</label>
+          <input class="form-input" type="number" id="trip-days" placeholder="例：7" min="1" max="90" required>
+          <p class="form-hint">最多可設定 90 天</p>
+        </div>
+        <div class="form-group">
+          <div class="form-toggle-row">
+            <label class="form-label" style="margin-bottom:0">設定預算上限</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="budget-toggle">
+              <span class="toggle-track"></span>
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+          <div class="budget-input-wrapper" id="budget-wrapper">
+            <input class="form-input" type="number" id="budget-amount" placeholder="預算金額（NT$）" min="0">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" id="btn-start">出發吧 ✦</button>
+      </form>
+    </div>
+
+    <!-- ===== DASHBOARD VIEW ===== -->
+    <div class="view" id="view-dashboard">
+      <div class="header">
+        <div class="header-left">
+          <div>
+            <div class="header-title" id="dash-title">環島記帳</div>
+            <div class="header-subtitle" id="dash-subtitle"></div>
+          </div>
+        </div>
+        <button class="header-btn" id="btn-settings" aria-label="設定">⚙</button>
+      </div>
+      <div class="dashboard-content" id="dashboard-content">
+        <div id="budget-display"></div>
+        <div class="section-title">每日花費</div>
+        <div class="day-cards-scroll" id="day-cards"></div>
+        <div class="expense-list" id="recent-expenses">
+          <div class="section-title">最近花費</div>
+          <div id="recent-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DAY DETAIL VIEW ===== -->
+    <div class="view" id="view-day-detail">
+      <div class="header">
+        <button class="header-btn" id="btn-back-day" aria-label="返回">←</button>
+        <div style="text-align:center">
+          <div class="header-title" id="day-detail-title">第 1 天</div>
+          <div class="header-subtitle" id="day-detail-subtitle"></div>
+        </div>
+        <button class="header-btn" id="btn-add-day-expense" aria-label="新增花費">＋</button>
+      </div>
+      <div class="day-detail-content">
+        <div class="day-summary-card">
+          <div class="day-summary-label">當日花費</div>
+          <div class="day-summary-amount" id="day-detail-amount"><span class="currency">$</span>0</div>
+        </div>
+        <div class="section-title">花費項目</div>
+        <div class="day-expense-list" id="day-expense-list"></div>
+      </div>
+    </div>
+
+    <!-- ===== SUMMARY VIEW ===== -->
+    <div class="view" id="view-summary">
+      <div class="header">
+        <div class="header-left">
+          <div class="header-title">花費總覽</div>
+        </div>
+        <div></div>
+      </div>
+      <div class="summary-content" id="summary-content"></div>
+    </div>
+
+    <!-- ===== SETTINGS VIEW ===== -->
+    <div class="view" id="view-settings">
+      <div class="header">
+        <button class="header-btn" id="btn-back-settings" aria-label="返回">←</button>
+        <div class="header-title">設定</div>
+        <div style="width:38px"></div>
+      </div>
+      <div class="settings-content" id="settings-content"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" id="bottom-nav" style="display:none">
+    <button class="nav-item active" data-view="dashboard" id="nav-dashboard">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首頁</span>
+    </button>
+    <button class="nav-item" data-view="summary" id="nav-summary">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">總覽</span>
+    </button>
+    <button class="nav-item add-btn" id="nav-add">
+      <span class="nav-icon">＋</span>
+      <span class="nav-label"></span>
+    </button>
+    <button class="nav-item" data-view="day-select" id="nav-days">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">日期</span>
+    </button>
+    <button class="nav-item" data-view="settings-nav" id="nav-settings">
+      <span class="nav-icon">⚙</span>
+      <span class="nav-label">設定</span>
+    </button>
+  </nav>
+
+  <!-- Add Expense Modal -->
+  <div class="modal-overlay" id="add-modal">
+    <div class="modal-content">
+      <div class="modal-handle"></div>
+      <div class="modal-title">新增花費</div>
+      <form id="add-expense-form" autocomplete="off">
+        <div class="form-group">
+          <label class="form-label">分類</label>
+          <div class="category-pills" id="category-pills">
+            <button type="button" class="category-pill selected" data-cat="🍽️ 飲食">🍽️ 飲食</button>
+            <button type="button" class="category-pill" data-cat="🚗 交通">🚗 交通</button>
+            <button type="button" class="category-pill" data-cat="🏨 住宿">🏨 住宿</button>
+            <button type="button" class="category-pill" data-cat="🎫 門票">🎫 門票</button>
+            <button type="button" class="category-pill" data-cat="🛍️ 購物">🛍️ 購物</button>
+            <button type="button" class="category-pill" data-cat="☕ 咖啡">☕ 咖啡</button>
+            <button type="button" class="category-pill" data-cat="📦 其他">📦 其他</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="expense-name">品項名稱</label>
+          <input class="form-input" type="text" id="expense-name" placeholder="例：海景民宿" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="expense-amount">金額（NT$）</label>
+          <input class="form-input" type="number" id="expense-amount" placeholder="0" min="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="expense-day">歸屬天數</label>
+          <select class="form-select" id="expense-day"></select>
+          <p class="form-hint">可預先記錄其他天數的花費</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">附加照片（選填）</label>
+          <div class="photo-upload-area" id="photo-area">
+            <div class="photo-upload-icon">📷</div>
+            <div class="photo-upload-text">點擊拍照或上傳照片</div>
+            <img class="photo-preview" id="photo-preview" alt="預覽">
+            <button type="button" class="photo-remove-btn" id="photo-remove">✕</button>
+          </div>
+          <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none">
+        </div>
+        <button type="submit" class="btn-primary">記錄花費 ✦</button>
+        <button type="button" class="btn-secondary mt-16" id="btn-cancel-add">取消</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Expense Modal -->
+  <div class="edit-modal-overlay" id="edit-modal">
+    <div class="edit-modal-content">
+      <div class="edit-modal-title">編輯花費</div>
+      <form id="edit-expense-form" autocomplete="off">
+        <div class="form-group">
+          <label class="form-label" for="edit-expense-name">品項名稱</label>
+          <input class="form-input" type="text" id="edit-expense-name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-expense-amount">金額（NT$）</label>
+          <input class="form-input" type="number" id="edit-expense-amount" min="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-expense-day">歸屬天數</label>
+          <select class="form-select" id="edit-expense-day"></select>
+        </div>
+        <div class="edit-modal-actions">
+          <button type="button" class="btn-secondary" id="btn-cancel-edit">取消</button>
+          <button type="submit" class="btn-primary">儲存</button>
+        </div>
+        <button type="button" class="btn-danger mt-16" id="btn-delete-expense">刪除此筆花費</button>
+      </form>
+      <input type="hidden" id="edit-expense-id">
+    </div>
+  </div>
+
+  <!-- Photo Viewer -->
+  <div class="photo-viewer" id="photo-viewer">
+    <button class="photo-viewer-close" id="photo-viewer-close">✕</button>
+    <img id="photo-viewer-img" alt="照片">
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div class="confirm-overlay" id="confirm-dialog">
+    <div class="confirm-box">
+      <div class="confirm-icon" id="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirm-title">確認</div>
+      <div class="confirm-text" id="confirm-text">確定要執行此操作嗎？</div>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" id="confirm-cancel">取消</button>
+        <button class="confirm-ok" id="confirm-ok">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
